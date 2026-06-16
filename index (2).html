@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CARTRIDGE.IO — Loja de Jogos Indie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d12;
+    --surface: #131822;
+    --surface-2: #1a212c;
+    --line: #242b38;
+    --ink: #eef1f5;
+    --ink-dim: #8993a4;
+    --ink-faint: #5b6373;
+    --volt: #4ef0c5;
+    --volt-dim: #2c8268;
+    --amber: #ffb454;
+    --amber-dim: #8a6328;
+    --accent: #ff4f7b;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --maxw: 1180px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { margin: 0; font-family: 'Sora', sans-serif; }
+  p { margin: 0; }
+  a { color: inherit; }
+  ul { margin: 0; padding: 0; list-style: none; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea, select {
+    font-family: 'Sora', sans-serif;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--volt); }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .pixel { font-family: 'Press Start 2P', monospace; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+  :focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px 20px; border-radius: 999px; font-weight: 600; font-size: 13px;
+    letter-spacing: 0.02em; transition: transform .12s, opacity .12s; white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--volt); color: #06251c; }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+  .btn-ghost:hover { border-color: var(--ink-dim); }
+  .btn-amber { background: var(--amber); color: #2b1a02; }
+  .btn-danger { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+  .btn-sm { padding: 7px 13px; font-size: 12px; }
+  .btn-block { width: 100%; }
+  .btn-icon { width: 38px; height: 38px; padding: 0; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--line); }
+
+  /* ===== SCANLINES (hero only) ===== */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 110px 0 90px;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 0%, rgba(78,240,197,0.10), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 85% 15%, rgba(255,180,84,0.08), transparent 60%);
+    border-bottom: 1px solid var(--line);
+  }
+  .hero::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      to bottom, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px,
+      transparent 1px, transparent 3px
+    );
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+  .hero-inner { position: relative; z-index: 1; max-width: 720px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--volt); margin-bottom: 22px;
+  }
+  .eyebrow::before { content: "●"; font-size: 8px; animation: blink 1.4s infinite steps(2); }
+  @keyframes blink { 50% { opacity: 0.15; } }
+  .boot-line {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: clamp(28px, 5vw, 46px);
+    line-height: 1.35;
+    color: var(--ink);
+    text-shadow: 3px 3px 0 var(--volt-dim);
+    margin-bottom: 22px;
+  }
+  .hero h1 span { color: var(--volt); }
+  .hero p.tagline { font-size: 16px; color: var(--ink-dim); max-width: 520px; margin-bottom: 34px; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 36px; }
+  .hero-meta {
+    display: flex; gap: 22px; flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--ink-faint);
+  }
+
+  /* ===== HEADER ===== */
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(10,13,18,0.85); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .site-header .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .logo { display: flex; align-items: baseline; gap: 2px; font-family: 'Press Start 2P', monospace; font-size: 14px; }
+  .logo .lg-a { color: var(--ink); }
+  .logo .lg-b { color: var(--volt); }
+  .main-nav { display: flex; align-items: center; gap: 28px; }
+  .main-nav a { font-size: 13.5px; color: var(--ink-dim); text-decoration: none; transition: color .15s; }
+  .main-nav a:hover { color: var(--ink); }
+  .admin-toggle { display: flex; align-items: center; gap: 14px; }
+
+  /* ===== STORE TOOLBAR ===== */
+  .store-section { padding: 70px 0 90px; }
+  .section-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 30px; }
+  .section-heading h2 { font-size: 22px; font-weight: 700; }
+  .section-heading .count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-faint); }
+  .toolbar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 36px; }
+  .search-box { position: relative; flex: 1; min-width: 220px; }
+  .search-box input { padding-left: 38px; }
+  .search-box::before {
+    content: "⌕"; position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    color: var(--ink-faint); font-size: 15px;
+  }
+  .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    padding: 9px 16px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+    border: 1px solid var(--line); color: var(--ink-dim); background: var(--surface);
+    transition: all .15s;
+  }
+  .pill.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* ===== GAME CARDS ===== */
+  .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px; }
+  .game-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column; transition: border-color .15s, transform .15s;
+    position: relative;
+  }
+  .game-card:hover { border-color: var(--ink-faint); transform: translateY(-3px); }
+  .card-cover { position: relative; height: 150px; overflow: hidden; }
+  .card-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ribbon {
+    position: absolute; top: 12px; left: -7px; z-index: 2;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.06em; padding: 5px 12px 5px 16px;
+    clip-path: polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%);
+  }
+  .ribbon.retro { background: var(--amber); color: #2b1a02; font-family: 'Press Start 2P', monospace; font-size: 8px; padding: 7px 12px 7px 16px; }
+  .ribbon.moderno { background: var(--volt); color: #06251c; }
+  .card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .card-title { font-size: 15.5px; font-weight: 700; }
+  .card-genre { font-size: 12px; color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; }
+  .card-platforms { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    font-size: 10.5px; font-family: 'JetBrains Mono', monospace; padding: 3px 8px;
+    border-radius: 5px; background: var(--surface-2); color: var(--ink-dim); border: 1px solid var(--line);
+  }
+  .card-footer { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 6px; }
+  .price { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 15px; color: var(--accent); }
+  .price.free { color: var(--volt); }
+  .empty-state {
+    text-align: center; padding: 70px 20px; color: var(--ink-faint);
+    border: 1px dashed var(--line); border-radius: var(--radius); display: none;
+  }
+  .empty-state.show { display: block; }
+
+  /* ===== REQUEST SECTION ===== */
+  .request-section { padding: 80px 0; background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .request-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+  .request-info .pixel-tag { font-family: 'Press Start 2P', monospace; font-size: 10px; color: var(--amber); margin-bottom: 16px; display: block; }
+  .request-info h2 { font-size: 26px; margin-bottom: 16px; line-height: 1.3; }
+  .request-info p { color: var(--ink-dim); margin-bottom: 24px; }
+  .request-steps { display: flex; flex-direction: column; gap: 14px; }
+  .request-step { display: flex; gap: 12px; align-items: flex-start; font-size: 13.5px; color: var(--ink-dim); }
+  .request-step .num {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--volt);
+    border: 1px solid var(--volt-dim); border-radius: 50%; width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .request-form { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; display: flex; flex-direction: column; gap: 14px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  label { font-size: 12px; color: var(--ink-faint); margin-bottom: 6px; display: block; font-family: 'JetBrains Mono', monospace; }
+  textarea { resize: vertical; min-height: 80px; }
+  .form-note { font-size: 12px; color: var(--ink-faint); }
+
+  /* ===== CONTACT ===== */
+  .contact-section { padding: 80px 0 100px; }
+  .contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .contact-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 24px; display: flex; flex-direction: column; gap: 10px; text-decoration: none;
+    transition: border-color .15s, transform .15s;
+  }
+  .contact-card:hover { border-color: var(--volt); transform: translateY(-2px); }
+  .contact-card .ic { font-size: 22px; }
+  .contact-card .lbl { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+  .contact-card .val { font-size: 14.5px; font-weight: 600; }
+  .contact-card.empty { opacity: 0.45; }
+
+  /* ===== FOOTER ===== */
+  .site-footer { border-top: 1px solid var(--line); padding: 30px 0; }
+  .site-footer .wrap { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .site-footer .f-left { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-faint); }
+  .footer-admin-link { font-size: 12px; color: var(--ink-faint); text-decoration: underline; text-decoration-color: var(--line); }
+
+  /* ===== TOAST ===== */
+  #toastHost { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 10px; }
+  .toast {
+    background: var(--surface-2); border: 1px solid var(--volt); color: var(--ink);
+    padding: 13px 18px; border-radius: var(--radius-sm); font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    animation: toastIn .25s ease;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* ===== MODAL (game detail) ===== */
+  .modal-veil {
+    position: fixed; inset: 0; background: rgba(5,7,10,0.78); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px;
+  }
+  .modal-veil.show { display: flex; }
+  .modal-box {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    max-width: 460px; width: 100%; padding: 28px; position: relative;
+  }
+  .modal-close { position: absolute; top: 16px; right: 16px; font-size: 18px; color: var(--ink-faint); }
+  .modal-box h3 { font-size: 19px; margin-bottom: 6px; }
+  .modal-box .modal-genre { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-faint); margin-bottom: 16px; }
+  .modal-box p.modal-desc { color: var(--ink-dim); font-size: 13.5px; margin-bottom: 20px; }
+  .modal-box .modal-price { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--accent); font-weight: 700; margin-bottom: 18px; }
+
+  /* ===== ADMIN OVERLAY ===== */
+  .admin-veil {
+    position: fixed; inset: 0; background: var(--bg); z-index: 300; display: none; overflow-y: auto;
+  }
+  .admin-veil.show { display: block; }
+  .admin-bar {
+    position: sticky; top: 0; background: var(--surface); border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 60px; z-index: 5;
+  }
+  .admin-bar .a-logo { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--volt); }
+  .admin-body { max-width: var(--maxw); margin: 0 auto; padding: 36px 28px 80px; }
+  .admin-login { max-width: 360px; margin: 100px auto; text-align: center; }
+  .admin-login .pixel { font-size: 11px; color: var(--amber); display: block; margin-bottom: 18px; }
+  .admin-login h2 { font-size: 20px; margin-bottom: 22px; }
+  .admin-login input { margin-bottom: 14px; }
+  .admin-login .err { color: var(--accent); font-size: 12px; margin-top: 10px; min-height: 16px; }
+  .admin-tabs { display: flex; gap: 8px; margin-bottom: 32px; border-bottom: 1px solid var(--line); }
+  .a-tab { padding: 12px 4px; margin-right: 22px; font-size: 13.5px; font-weight: 600; color: var(--ink-faint); border-bottom: 2px solid transparent; }
+  .a-tab.active { color: var(--ink); border-color: var(--volt); }
+  .a-panel { display: none; }
+  .a-panel.active { display: block; }
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 36px; }
+  .stat-box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px; }
+  .stat-box .n { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: var(--volt); }
+  .stat-box .l { font-size: 11.5px; color: var(--ink-faint); margin-top: 4px; }
+  .a-grid-2 { display: grid; grid-template-columns: 360px 1fr; gap: 28px; align-items: start; }
+  .a-form-card, .a-list-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+  .a-form-card h3, .a-list-card h3 { font-size: 14.5px; margin-bottom: 18px; }
+  .a-form-card .field { margin-bottom: 14px; }
+  .a-table-row {
+    display: grid; grid-template-columns: 56px 1fr 90px 90px 80px; gap: 12px; align-items: center;
+    padding: 12px 8px; border-bottom: 1px solid var(--line); font-size: 13px;
+  }
+  .a-table-row.head { color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .a-thumb { width: 44px; height: 44px; border-radius: 6px; overflow: hidden; }
+  .a-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .a-row-actions { display: flex; gap: 6px; }
+  .req-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 12px; }
+  .req-card .top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+  .req-card .name { font-weight: 700; font-size: 13.5px; }
+  .req-card .date { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); }
+  .req-card .game-wanted { color: var(--volt); font-size: 13px; margin-bottom: 4px; }
+  .req-card .msg { color: var(--ink-dim); font-size: 13px; }
+  .settings-form { max-width: 520px; }
+  .danger-zone { margin-top: 40px; border-top: 1px dashed var(--line); padding-top: 24px; }
+  .help-text { font-size: 11.5px; color: var(--ink-faint); margin-top: 4px; }
+
+  @media (max-width: 880px) {
+    .main-nav { display: none; }
+    .request-grid { grid-template-columns: 1fr; gap: 36px; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .field-row { grid-template-columns: 1fr; }
+    .a-grid-2 { grid-template-columns: 1fr; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .a-table-row { grid-template-columns: 40px 1fr 70px; }
+    .a-table-row span:nth-child(4), .a-table-row span:nth-child(5) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="toastHost"></div>
+
+<!-- ============ HEADER ============ -->
+<header class="site-header">
+  <div class="wrap">
+    <div class="logo"><span class="lg-a">CARTRIDGE</span><span class="lg-b">.IO</span></div>
+    <nav class="main-nav">
+      <a href="#loja">Loja</a>
+      <a href="#solicitar">Solicitar jogo</a>
+      <a href="#contato">Contato</a>
+    </nav>
+    <div class="admin-toggle">
+      <button class="btn btn-icon" id="openAdminBtn" title="Painel administrativo">⚙</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap hero-inner">
+    <div class="boot-line">&gt; LOADING_CATALOG.EXE ___ OK</div>
+    <span class="eyebrow">Loja de jogos independentes</span>
+    <h1 id="heroTitle">JOGOS QUE<br>FORAM <span>FEITOS</span><br>À MÃO.</h1>
+    <p class="tagline" id="heroTagline">Do pixel à próxima geração — uma loja para os jogos que eu mesmo criei, do clássico ao atual. Cada cartucho aqui tem uma história.</p>
+    <div class="hero-actions">
+      <a href="#loja" class="btn btn-primary">Ver catálogo ▸</a>
+      <a href="#solicitar" class="btn btn-ghost">Solicitar um jogo</a>
+    </div>
+    <div class="hero-meta">
+      <span id="metaCount">🎮 0 jogos no catálogo</span>
+      <span>🕹️ Retrô &amp; Moderno</span>
+      <span>⚡ Entrega digital</span>
+    </div>
+  </div>
+</section>
+
+<main>
+  <!-- ============ LOJA ============ -->
+  <section class="store-section wrap" id="loja">
+    <div class="section-heading">
+      <h2>Catálogo</h2>
+      <span class="count" id="resultCount">0 jogos</span>
+    </div>
+    <div class="toolbar">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Buscar por nome ou gênero...">
+      </div>
+      <div class="filter-pills" id="filterPills">
+        <button class="pill active" data-filter="todos">Todos</button>
+        <button class="pill" data-filter="retro">Retrô</button>
+        <button class="pill" data-filter="moderno">Moderno</button>
+      </div>
+    </div>
+    <div class="games-grid" id="gamesGrid"></div>
+    <div class="empty-state" id="emptyState">Nenhum jogo encontrado por aqui. Tente outro termo de busca ou filtro.</div>
+  </section>
+
+  <!-- ============ SOLICITAR JOGO ============ -->
+  <section class="request-section" id="solicitar">
+    <div class="wrap request-grid">
+      <div class="request-info">
+        <span class="pixel-tag">SIDE QUEST</span>
+        <h2>Não achou o que procurava? Peça um jogo.</h2>
+        <p>Conte que tipo de jogo você gostaria de ver na loja — uma ideia, um gênero, ou até uma continuação de algo que já existe aqui. Todo pedido é lido manualmente.</p>
+        <div class="request-steps">
+          <div class="request-step"><span class="num">1</span>Você descreve o que imagina no formulário ao lado.</div>
+          <div class="request-step"><span class="num">2</span>O pedido cai direto no painel administrativo.</div>
+          <div class="request-step"><span class="num">3</span>Se fizer sentido, o jogo entra em produção (ou no catálogo, se já existir).</div>
+        </div>
+      </div>
+      <form class="request-form" id="requestForm">
+        <div class="field-row">
+          <div>
+            <label for="reqName">Seu nome</label>
+            <input type="text" id="reqName" required placeholder="Como podemos te chamar">
+          </div>
+          <div>
+            <label for="reqContact">Contato (e-mail ou Telegram)</label>
+            <input type="text" id="reqContact" placeholder="@seunome ou e-mail">
+          </div>
+        </div>
+        <div>
+          <label for="reqGame">Jogo desejado</label>
+          <input type="text" id="reqGame" required placeholder="Nome ou ideia do jogo">
+        </div>
+        <div>
+          <label for="reqPlatform">Plataforma preferida</label>
+          <select id="reqPlatform">
+            <option>PC</option>
+            <option>Mobile</option>
+            <option>Mac</option>
+            <option>Linux</option>
+            <option>Indiferente</option>
+          </select>
+        </div>
+        <div>
+          <label for="reqMsg">Descreva sua ideia</label>
+          <textarea id="reqMsg" placeholder="Gênero, referências, mecânicas que você gostaria..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Enviar solicitação</button>
+        <p class="form-note" id="telegramNote"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ CONTATO ============ -->
+  <section class="contact-section wrap" id="contato">
+    <div class="section-heading"><h2>Fale com a loja</h2></div>
+    <div class="contact-grid" id="contactGrid"></div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span class="f-left" id="footerName">CARTRIDGE.IO © 2026</span>
+    <button class="footer-admin-link" id="openAdminBtn2">Painel administrativo</button>
+  </div>
+</footer>
+
+<!-- ============ MODAL: DETALHE DO JOGO ============ -->
+<div class="modal-veil" id="gameModal">
+  <div class="modal-box">
+    <button class="modal-close" id="closeModal">✕</button>
+    <span class="modal-genre" id="modalGenre"></span>
+    <h3 id="modalTitle"></h3>
+    <p class="modal-desc" id="modalDesc"></p>
+    <p class="modal-price" id="modalPrice"></p>
+    <a class="btn btn-primary btn-block" id="modalBuyBtn" target="_blank">Comprar via Telegram</a>
+  </div>
+</div>
+
+<!-- ============ ADMIN OVERLAY ============ -->
+<div class="admin-veil" id="adminVeil">
+  <div class="admin-bar">
+    <span class="a-logo">CARTRIDGE.IO / painel</span>
+    <button class="btn btn-ghost btn-sm" id="closeAdmin">Fechar painel</button>
+  </div>
+
+  <div class="admin-body">
+    <!-- LOGIN -->
+    <div class="admin-login" id="adminLogin">
+      <span class="pixel">ACESSO RESTRITO</span>
+      <h2>Digite a senha do painel</h2>
+      <input type="password" id="adminPassInput" placeholder="Senha">
+      <button class="btn btn-primary btn-block" id="adminLoginBtn">Entrar</button>
+      <p class="err" id="adminLoginErr"></p>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="adminDashboard" style="display:none;">
+      <div class="stat-row">
+        <div class="stat-box"><div class="n" id="statTotal">0</div><div class="l">Jogos no catálogo</div></div>
+        <div class="stat-box"><div class="n" id="statRetro">0</div><div class="l">Retrô</div></div>
+        <div class="stat-box"><div class="n" id="statModerno">0</div><div class="l">Moderno</div></div>
+        <div class="stat-box"><div class="n" id="statReq">0</div><div class="l">Solicitações</div></div>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="a-tab active" data-tab="games">Jogos</button>
+        <button class="a-tab" data-tab="requests">Solicitações</button>
+        <button class="a-tab" data-tab="settings">Configurações</button>
+      </div>
+
+      <!-- TAB: JOGOS -->
+      <div class="a-panel active" id="tabGames">
+        <div class="a-form-card" style="margin-bottom:24px;">
+          <h3>🥝 Como vender este jogo pela Kiwify</h3>
+          <div class="request-steps">
+            <div class="request-step"><span class="num">1</span>Na Kiwify, vá em <b>Produtos → Novo produto</b> e crie um produto pra este jogo.</div>
+            <div class="request-step"><span class="num">2</span>Escolha entrega via <b>Área de membros da Kiwify</b> e suba o arquivo do jogo (zip, instalador ou link de download).</div>
+            <div class="request-step"><span class="num">3</span>Defina na Kiwify o mesmo preço que você vai colocar aqui no campo "Preço" abaixo.</div>
+            <div class="request-step"><span class="num">4</span>Copie o <b>link de checkout</b> do produto (em Produtos → seu produto → "Compartilhar" ou "Link de pagamento") e cole no campo "Link de checkout Kiwify".</div>
+          </div>
+          <p class="help-text" style="margin-top:14px;">Se esse campo ficar vazio, o botão de compra do jogo continua usando Telegram/e-mail, como antes.</p>
+        </div>
+        <div class="a-grid-2">
+          <div class="a-form-card">
+            <h3 id="formTitle">Adicionar jogo</h3>
+            <form id="gameForm">
+              <input type="hidden" id="editingId">
+              <div class="field"><label for="gTitle">Título</label><input type="text" id="gTitle" required></div>
+              <div class="field"><label for="gCategory">Categoria</label>
+                <select id="gCategory"><option value="retro">Retrô</option><option value="moderno">Moderno</option></select>
+              </div>
+              <div class="field"><label for="gGenre">Gênero</label><input type="text" id="gGenre" placeholder="Ex: Plataforma, RPG..."></div>
+              <div class="field"><label for="gPrice">Preço (R$, use 0 para gratuito)</label><input type="number" id="gPrice" min="0" step="0.01" value="0"></div>
+              <div class="field"><label for="gPlatforms">Plataformas (separadas por vírgula)</label><input type="text" id="gPlatforms" placeholder="PC, Mac, Linux"></div>
+              <div class="field">
+                <label for="gKiwifyLink">Link de checkout Kiwify (opcional)</label>
+                <input type="text" id="gKiwifyLink" placeholder="https://pay.kiwify.com.br/xxxxxxx">
+                <p class="help-text">Cole aqui o link de pagamento do produto correspondente na Kiwify. Vazio = compra continua via Telegram/e-mail.</p>
+              </div>
+              <div class="field"><label for="gImage">URL da imagem de capa (opcional)</label><input type="text" id="gImage" placeholder="https://..."></div>
+              <div class="field"><label for="gDesc">Descrição curta</label><textarea id="gDesc"></textarea></div>
+              <button type="submit" class="btn btn-primary btn-block" id="saveGameBtn">Adicionar jogo</button>
+              <button type="button" class="btn btn-ghost btn-block" id="cancelEditBtn" style="display:none;margin-top:8px;">Cancelar edição</button>
+            </form>
+          </div>
+          <div class="a-list-card">
+            <h3>Jogos cadastrados</h3>
+            <div class="a-table-row head"><span></span><span>Título</span><span>Categoria</span><span>Preço</span><span>Ações</span></div>
+            <div id="adminGamesList"></div>
+            <div class="danger-zone">
+              <p class="help-text">Backup do catálogo (exporte antes de fazer mudanças grandes):</p>
+              <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn btn-ghost btn-sm" id="exportBtn">Exportar JSON</button>
+                <label class="btn btn-ghost btn-sm" style="position:relative;">
+                  Importar JSON
+                  <input type="file" id="importInput" accept=".json" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+                </label>
+                <button class="btn btn-danger btn-sm" id="resetBtn">Restaurar catálogo padrão</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SOLICITAÇÕES -->
+      <div class="a-panel" id="tabRequests">
+        <div id="requestsList"></div>
+        <p class="help-text" id="noRequests">Nenhuma solicitação por enquanto.</p>
+      </div>
+
+      <!-- TAB: CONFIGURAÇÕES -->
+      <div class="a-panel" id="tabSettings">
+        <form class="settings-form a-form-card" id="settingsForm">
+          <h3>Identidade da loja</h3>
+          <div class="field"><label for="sStoreName">Nome da loja</label><input type="text" id="sStoreName"></div>
+          <div class="field"><label for="sTagline">Frase de efeito (hero)</label><textarea id="sTagline"></textarea></div>
+          <h3 style="margin-top:22px;">Canais de contato</h3>
+          <div class="field"><label for="sTelegram">Usuário do Telegram (sem @)</label><input type="text" id="sTelegram" placeholder="seuusuario"></div>
+          <div class="field"><label for="sEmail">E-mail</label><input type="text" id="sEmail" placeholder="contato@seudominio.com"></div>
+          <div class="field"><label for="sDiscord">Servidor do Discord (link, opcional)</label><input type="text" id="sDiscord" placeholder="https://discord.gg/..."></div>
+          <div class="field"><label for="sAdminPass">Senha do painel</label><input type="text" id="sAdminPass"></div>
+          <p class="help-text">A senha do painel fica salva apenas neste navegador. Não é uma proteção contra invasores avançados — é só uma trava simples para visitantes casuais.</p>
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:14px;">Salvar configurações</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const STORAGE = {
+    games: 'cartridge_games_v1',
+    settings: 'cartridge_settings_v1',
+    requests: 'cartridge_requests_v1'
+  };
+
+  const DEFAULT_SETTINGS = {
+    storeName: 'CARTRIDGE.IO',
+    tagline: 'Do pixel à próxima geração — uma loja para os jogos que eu mesmo criei, do clássico ao atual. Cada cartucho aqui tem uma história.',
+    telegram: 'seuusuario',
+    email: 'contato@cartridge.io',
+    discord: '',
+    adminPassword: 'cartridge2026'
+  };
+
+  const DEFAULT_GAMES = [
+    { id: 'g1', title: 'Pixel Knight', category: 'retro', genre: 'Plataforma / Ação', price: 19.90, platforms: ['PC','Linux'], image: '', desc: 'Um cavaleiro de 8 bits enfrenta masmorras geradas em blocos de cor, com trilha sonora chiptune original.' },
+    { id: 'g2', title: 'Voidrunner', category: 'moderno', genre: 'Roguelike / Shooter', price: 34.90, platforms: ['PC','Mac'], image: '', desc: 'Combate espacial rápido com física moderna, builds aleatórias e visual neon minimalista.' },
+    { id: 'g3', title: 'Cartucho Perdido', category: 'retro', genre: 'Aventura / Puzzle', price: 0, platforms: ['PC'], image: '', desc: 'Uma aventura point-and-click inspirada nos consoles de 16 bits, sobre um cartucho de jogo que ganha vida.' },
+    { id: 'g4', title: 'Glass Horizon', category: 'moderno', genre: 'Exploração', price: 49.90, platforms: ['PC','Mobile'], image: '', desc: 'Exploração contemplativa em mundo aberto de baixo poligonagem com iluminação volumétrica.' },
+    { id: 'g5', title: 'Byte Brigade', category: 'retro', genre: 'Estratégia', price: 24.90, platforms: ['PC','Linux','Mac'], image: '', desc: 'Tática por turnos em grade, homenagem direta aos clássicos de estratégia de 16 bits.' },
+    { id: 'g6', title: 'Echo Frame', category: 'moderno', genre: 'Quebra-cabeça narrativo', price: 29.90, platforms: ['PC','Mobile'], image: '', desc: 'Puzzles de manipulação de tempo contados através de uma narrativa fragmentada e elegante.' }
+  ];
+
+  let games = [], settings = {}, requests = [];
+  let activeFilter = 'todos', searchTerm = '';
+
+  function load(){
+    try { games = JSON.parse(localStorage.getItem(STORAGE.games)) || null; } catch(e){ games = null; }
+    if (!games) { games = DEFAULT_GAMES.slice(); save('games'); }
+    try { settings = JSON.parse(localStorage.getItem(STORAGE.settings)) || null; } catch(e){ settings = null; }
+    if (!settings) { settings = Object.assign({}, DEFAULT_SETTINGS); save('settings'); }
+    try { requests = JSON.parse(localStorage.getItem(STORAGE.requests)) || []; } catch(e){ requests = []; }
+  }
+  function save(which){
+    if (which === 'games') localStorage.setItem(STORAGE.games, JSON.stringify(games));
+    if (which === 'settings') localStorage.setItem(STORAGE.settings, JSON.stringify(settings));
+    if (which === 'requests') localStorage.setItem(STORAGE.requests, JSON.stringify(requests));
+  }
+
+  function toast(msg){
+    const host = document.getElementById('toastHost');
+    const el = document.createElement('div');
+    el.className = 'toast'; el.textContent = msg;
+    host.appendChild(el);
+    setTimeout(()=> el.remove(), 3200);
+  }
+
+  function hueFor(str){
+    let h = 0;
+    for (let i=0;i<str.length;i++) h = (h * 31 + str.charCodeAt(i)) % 360;
+    return h;
+  }
+
+  function placeholderCover(game){
+    const hue = hueFor(game.title || 'x');
+    const hue2 = (hue + 50) % 360;
+    return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg, hsl(${hue},45%,18%), hsl(${hue2},55%,12%));
+      background-image: radial-gradient(circle, hsla(${hue},90%,70%,0.18) 1px, transparent 1.4px), linear-gradient(135deg, hsl(${hue},45%,18%), hsl(${hue2},55%,12%));
+      background-size: 14px 14px, 100% 100%;">
+      <span class="mono" style="font-size:26px;font-weight:700;color:hsla(${hue},90%,80%,0.55);letter-spacing:2px;">${(game.title||'??').slice(0,2).toUpperCase()}</span>
+    </div>`;
+  }
+
+  function fmtPrice(p){
+    return p > 0 ? 'R$ ' + Number(p).toFixed(2).replace('.', ',') : 'Grátis';
+  }
+
+  function renderStore(){
+    const grid = document.getElementById('gamesGrid');
+    const filtered = games.filter(g => {
+      const matchFilter = activeFilter === 'todos' || g.category === activeFilter;
+      const matchSearch = !searchTerm || (g.title+' '+g.genre).toLowerCase().includes(searchTerm.toLowerCase());
+      return matchFilter && matchSearch;
+    });
+    grid.innerHTML = filtered.map(g => `
+      <div class="game-card" data-id="${g.id}">
+        <div class="card-cover">
+          <span class="ribbon ${g.category}">${g.category === 'retro' ? 'RETRO' : 'NOVO'}</span>
+          ${g.image ? `<img src="${g.image}" alt="${g.title}">` : placeholderCover(g)}
+        </div>
+        <div class="card-body">
+          <p class="card-title">${g.title}</p>
+          <p class="card-genre">${g.genre || '—'}</p>
+          <div class="card-platforms">${(g.platforms||[]).map(p=>`<span class="chip">${p}</span>`).join('')}</div>
+          <div class="card-footer">
+            <span style="display:flex;align-items:center;gap:8px;">
+              <span class="price ${g.price===0?'free':''}">${fmtPrice(g.price)}</span>
+              ${g.kiwifyLink ? '<span class="chip" style="border-color:var(--volt);color:var(--volt);">🥝 Kiwify</span>' : ''}
+            </span>
+            <button class="btn btn-primary btn-sm open-game">Ver mais</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById('emptyState').classList.toggle('show', filtered.length === 0);
+    document.getElementById('resultCount').textContent = filtered.length + (filtered.length===1?' jogo':' jogos');
+    document.getElementById('metaCount').textContent = '🎮 ' + games.length + ' jogos no catálogo';
+
+    grid.querySelectorAll('.open-game').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.closest('.game-card').dataset.id;
+        openGameModal(games.find(g=>g.id===id));
+      });
+    });
+  }
+
+  function openGameModal(g){
+    document.getElementById('modalTitle').textContent = g.title;
+    document.getElementById('modalGenre').textContent = (g.genre||'') + (g.platforms&&g.platforms.length ? ' · ' + g.platforms.join(', ') : '');
+    document.getElementById('modalDesc').textContent = g.desc || 'Sem descrição cadastrada ainda.';
+    document.getElementById('modalPrice').textContent = fmtPrice(g.price);
+    const tgUser = settings.telegram ? settings.telegram.replace('@','') : '';
+    const msg = encodeURIComponent('Olá! Quero comprar o jogo "' + g.title + '" (' + fmtPrice(g.price) + ').');
+    const buyBtn = document.getElementById('modalBuyBtn');
+    if (g.kiwifyLink) {
+      buyBtn.href = g.kiwifyLink;
+      buyBtn.textContent = '🥝 Comprar agora — pagamento seguro';
+      buyBtn.style.display = 'flex';
+    } else if (tgUser) {
+      buyBtn.href = 'https://t.me/' + tgUser + '?text=' + msg;
+      buyBtn.textContent = 'Comprar via Telegram';
+      buyBtn.style.display = 'flex';
+    } else {
+      buyBtn.href = 'mailto:' + (settings.email||'') + '?subject=' + encodeURIComponent('Compra: '+g.title);
+      buyBtn.textContent = 'Comprar via e-mail';
+      buyBtn.style.display = 'flex';
+    }
+    document.getElementById('gameModal').classList.add('show');
+  }
+  document.getElementById('closeModal').addEventListener('click', ()=> document.getElementById('gameModal').classList.remove('show'));
+  document.getElementById('gameModal').addEventListener('click', (e)=> { if (e.target.id==='gameModal') e.target.classList.remove('show'); });
+
+  document.getElementById('searchInput').addEventListener('input', (e)=>{ searchTerm = e.target.value; renderStore(); });
+  document.querySelectorAll('.filter-pills .pill').forEach(p=>{
+    p.addEventListener('click', ()=>{
+      document.querySelectorAll('.filter-pills .pill').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');
+      activeFilter = p.dataset.filter;
+      renderStore();
+    });
+  });
+
+  function renderHeroAndContact(){
+    document.getElementById('heroTagline').textContent = settings.tagline;
+    document.getElementById('footerName').textContent = settings.storeName + ' © ' + new Date().getFullYear();
+    document.querySelector('.logo .lg-a').textContent = settings.storeName.split('.')[0] || 'CARTRIDGE';
+    document.querySelector('.logo .lg-b').textContent = '.' + (settings.storeName.split('.')[1] || 'IO');
+
+    const tgUser = settings.telegram ? settings.telegram.replace('@','') : '';
+    document.getElementById('telegramNote').textContent = tgUser
+      ? 'Você também pode falar direto pelo Telegram: @' + tgUser
+      : '';
+
+    const cards = [];
+    if (tgUser) cards.push({ ic:'✈️', lbl:'Telegram', val:'@'+tgUser, href:'https://t.me/'+tgUser });
+    if (settings.email) cards.push({ ic:'✉️', lbl:'E-mail', val: settings.email, href:'mailto:'+settings.email });
+    if (settings.discord) cards.push({ ic:'🎮', lbl:'Discord', val:'Entrar no servidor', href: settings.discord });
+    while (cards.length < 3) cards.push(null);
+
+    document.getElementById('contactGrid').innerHTML = cards.map(c => c ? `
+      <a class="contact-card" href="${c.href}" target="_blank">
+        <span class="ic">${c.ic}</span>
+        <span class="lbl">${c.lbl}</span>
+        <span class="val">${c.val}</span>
+      </a>` : `
+      <div class="contact-card empty">
+        <span class="ic">➕</span>
+        <span class="lbl">Em breve</span>
+        <span class="val">Configure no painel</span>
+      </div>`
+    ).join('');
+  }
+
+  // ===== REQUEST FORM =====
+  document.getElementById('requestForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const req = {
+      id: 'r' + Date.now(),
+      name: document.getElementById('reqName').value.trim(),
+      contact: document.getElementById('reqContact').value.trim(),
+      game: document.getElementById('reqGame').value.trim(),
+      platform: document.getElementById('reqPlatform').value,
+      msg: document.getElementById('reqMsg').value.trim(),
+      date: new Date().toLocaleString('pt-BR')
+    };
+    requests.unshift(req);
+    save('requests');
+    this.reset();
+    toast('Pedido enviado! Obrigado, ' + (req.name || 'jogador') + '.');
+  });
+
+  // ===== ADMIN: AUTH =====
+  const adminVeil = document.getElementById('adminVeil');
+  function openAdmin(){
+    adminVeil.classList.add('show');
+    if (sessionStorage.getItem('cartridge_admin_unlocked') === '1') showDashboard();
+    else { document.getElementById('adminLogin').style.display='block'; document.getElementById('adminDashboard').style.display='none'; }
+  }
+  document.getElementById('openAdminBtn').addEventListener('click', openAdmin);
+  document.getElementById('openAdminBtn2').addEventListener('click', openAdmin);
+  document.getElementById('closeAdmin').addEventListener('click', ()=> adminVeil.classList.remove('show'));
+
+  document.getElementById('adminLoginBtn').addEventListener('click', () => {
+    const val = document.getElementById('adminPassInput').value;
+    if (val === settings.adminPassword) {
+      sessionStorage.setItem('cartridge_admin_unlocked','1');
+      showDashboard();
+    } else {
+      document.getElementById('adminLoginErr').textContent = 'Senha incorreta. Tente novamente.';
+    }
+  });
+  document.getElementById('adminPassInput').addEventListener('keydown', (e)=>{ if (e.key==='Enter') document.getElementById('adminLoginBtn').click(); });
+
+  function showDashboard(){
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminDashboard').style.display='block';
+    renderAdmin();
+  }
+
+  // ===== ADMIN: TABS =====
+  document.querySelectorAll('.a-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.a-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.a-panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
+    });
+  });
+
+  function renderAdmin(){
+    document.getElementById('statTotal').textContent = games.length;
+    document.getElementById('statRetro').textContent = games.filter(g=>g.category==='retro').length;
+    document.getElementById('statModerno').textContent = games.filter(g=>g.category==='moderno').length;
+    document.getElementById('statReq').textContent = requests.length;
+
+    document.getElementById('adminGamesList').innerHTML = games.map(g => `
+      <div class="a-table-row" data-id="${g.id}">
+        <div class="a-thumb">${g.image ? `<img src="${g.image}">` : placeholderCover(g)}</div>
+        <span>${g.title}</span>
+        <span>${g.category === 'retro' ? 'Retrô' : 'Moderno'}</span>
+        <span class="mono">${fmtPrice(g.price)}</span>
+        <span class="a-row-actions">
+          <button class="btn btn-icon btn-sm edit-game" title="Editar" style="width:30px;height:30px;">✎</button>
+          <button class="btn btn-icon btn-sm del-game" title="Remover" style="width:30px;height:30px;">🗑</button>
+        </span>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.edit-game').forEach(b=>b.addEventListener('click', e=>{
+      const id = e.target.closest('.a-table-row').dataset.id;
+      startEdit(games.find(g=>g.id===id));
+    }));
+    document.querySelectorAll('.del-game').forEach(b=>b.addEventListener('click', e=>{
+      const id = e.target.closest('.a-table-row').dataset.id;
+      if (confirm('Remover este jogo do catálogo?')) {
+        games = games.filter(g=>g.id!==id);
+        save('games'); renderAdmin(); renderStore();
+        toast('Jogo removido.');
+      }
+    }));
+
+    // requests
+    const reqList = document.getElementById('requestsList');
+    document.getElementById('noRequests').style.display = requests.length ? 'none' : 'block';
+    reqList.innerHTML = requests.map(r => `
+      <div class="req-card">
+        <div class="top"><span class="name">${r.name || 'Anônimo'}</span><span class="date">${r.date}</span></div>
+        <p class="game-wanted">🎮 ${r.game}</p>
+        <p class="msg">${r.msg || '<i>Sem descrição adicional</i>'}</p>
+        <p class="help-text">Plataforma: ${r.platform} ${r.contact ? '· Contato: ' + r.contact : ''}</p>
+      </div>
+    `).join('');
+
+    // settings form fill
+    document.getElementById('sStoreName').value = settings.storeName;
+    document.getElementById('sTagline').value = settings.tagline;
+    document.getElementById('sTelegram').value = settings.telegram;
+    document.getElementById('sEmail').value = settings.email;
+    document.getElementById('sDiscord').value = settings.discord;
+    document.getElementById('sAdminPass').value = settings.adminPassword;
+  }
+
+  // ===== ADMIN: GAME FORM (add/edit) =====
+  function startEdit(g){
+    document.getElementById('formTitle').textContent = 'Editar jogo';
+    document.getElementById('editingId').value = g.id;
+    document.getElementById('gTitle').value = g.title;
+    document.getElementById('gCategory').value = g.category;
+    document.getElementById('gGenre').value = g.genre || '';
+    document.getElementById('gPrice').value = g.price;
+    document.getElementById('gPlatforms').value = (g.platforms||[]).join(', ');
+    document.getElementById('gKiwifyLink').value = g.kiwifyLink || '';
+    document.getElementById('gImage').value = g.image || '';
+    document.getElementById('gDesc').value = g.desc || '';
+    document.getElementById('saveGameBtn').textContent = 'Salvar alterações';
+    document.getElementById('cancelEditBtn').style.display = 'block';
+    window.scrollTo({top: document.getElementById('gameForm').getBoundingClientRect().top + window.scrollY - 100, behavior:'smooth'});
+  }
+  function resetForm(){
+    document.getElementById('formTitle').textContent = 'Adicionar jogo';
+    document.getElementById('gameForm').reset();
+    document.getElementById('editingId').value = '';
+    document.getElementById('saveGameBtn').textContent = 'Adicionar jogo';
+    document.getElementById('cancelEditBtn').style.display = 'none';
+  }
+  document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
+
+  document.getElementById('gameForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const id = document.getElementById('editingId').value;
+    const data = {
+      title: document.getElementById('gTitle').value.trim(),
+      category: document.getElementById('gCategory').value,
+      genre: document.getElementById('gGenre').value.trim(),
+      price: parseFloat(document.getElementById('gPrice').value) || 0,
+      platforms: document.getElementById('gPlatforms').value.split(',').map(s=>s.trim()).filter(Boolean),
+      kiwifyLink: document.getElementById('gKiwifyLink').value.trim(),
+      image: document.getElementById('gImage').value.trim(),
+      desc: document.getElementById('gDesc').value.trim()
+    };
+    if (id) {
+      const idx = games.findIndex(g=>g.id===id);
+      games[idx] = Object.assign({id}, data);
+      toast('Jogo atualizado.');
+    } else {
+      data.id = 'g' + Date.now();
+      games.push(data);
+      toast('Jogo adicionado ao catálogo.');
+    }
+    save('games');
+    resetForm();
+    renderAdmin();
+    renderStore();
+  });
+
+  // ===== ADMIN: SETTINGS =====
+  document.getElementById('settingsForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    settings.storeName = document.getElementById('sStoreName').value.trim() || DEFAULT_SETTINGS.storeName;
+    settings.tagline = document.getElementById('sTagline').value.trim();
+    settings.telegram = document.getElementById('sTelegram').value.trim();
+    settings.email = document.getElementById('sEmail').value.trim();
+    settings.discord = document.getElementById('sDiscord').value.trim();
+    settings.adminPassword = document.getElementById('sAdminPass').value.trim() || DEFAULT_SETTINGS.adminPassword;
+    save('settings');
+    renderHeroAndContact();
+    toast('Configurações salvas.');
+  });
+
+  // ===== ADMIN: BACKUP =====
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(games, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'cartridge-catalogo.json';
+    a.click();
+  });
+  document.getElementById('importInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (Array.isArray(parsed)) {
+          games = parsed; save('games'); renderAdmin(); renderStore();
+          toast('Catálogo importado com sucesso.');
+        } else { toast('Arquivo inválido.'); }
+      } catch(err){ toast('Não foi possível ler o arquivo.'); }
+    };
+    reader.readAsText(file);
+  });
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if (confirm('Isso vai substituir todo o catálogo atual pelos jogos de exemplo. Continuar?')) {
+      games = DEFAULT_GAMES.slice(); save('games'); renderAdmin(); renderStore();
+      toast('Catálogo restaurado.');
+    }
+  });
+
+  // ===== INIT =====
+  load();
+  renderStore();
+  renderHeroAndContact();
+})();
+</script>
+</body>
+</html>
